@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { replicateGraphQLRequest } from '../services/replicateRequests.js'
 import { isValidProfileId } from '../utils/validateProfileId.js';
+import { retryRequest } from 'utils/retry.js';
+import { replicateGraphQLRequest } from 'services/replicateRequests.js';
 
 export async function fetchProfile(req: Request, res: Response, next: NextFunction) {
     const { profileId } = req.params
@@ -11,7 +12,7 @@ export async function fetchProfile(req: Request, res: Response, next: NextFuncti
             responseContent = {status: 400, content: {error: 'Invalid Profile ID'}}
         }
         else{
-            const response = await replicateGraphQLRequest(profileId);
+            const response = await retryRequest(replicateGraphQLRequest,[profileId]);
             console.log(response)
             responseContent = { status: 200, content: response }
         }
